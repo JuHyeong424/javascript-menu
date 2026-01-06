@@ -2,7 +2,7 @@ import {Random} from "@woowacourse/mission-utils";
 
 /*
 coachNameArray [ 'a', 'b', 'c' ]
-NotEatMenuObject { a: 'a', b: 'b', c: 'c' }
+{ '토미': '우동,스시', '제임스': '뇨끼,월남쌈', '포코': '마파두부,고추잡채' }
 m {
   코치이름: '1,2,3,4,5';
 }
@@ -19,7 +19,7 @@ function getRandomMenu(menu, dayCategoryArray, SAMPLE, NotEatMenuObject, coachNa
     menu[coachNameArray[count]] += menus[shuffleMenu] + ",";
 
     // 중복 메뉴 확인
-    const menuArray = menu[coachNameArray[count]].split(',');
+    const menuArray = menu[coachNameArray[count]].split(',').map(value => value.trim());
     const set = new Set(menuArray);
     if (menuArray.length !== set.size) {
       menu[coachNameArray[count]] = menu[coachNameArray[count]].slice(0, -(menus[shuffleMenu].length + 1))
@@ -30,7 +30,9 @@ function getRandomMenu(menu, dayCategoryArray, SAMPLE, NotEatMenuObject, coachNa
     if (NotEatMenuObject[coachNameArray[count]]) {
       const NotEatMenuKeyArray = Object.keys(NotEatMenuObject);
       if (NotEatMenuKeyArray.includes(coachNameArray[count])) {
-        const NotEatMenuValueArray = NotEatMenuObject[coachNameArray[count]].split(',');
+        const NotEatMenuValueArray = NotEatMenuObject[coachNameArray[count]].split(',').map(value => value.trim());
+        console.log(NotEatMenuValueArray);
+        console.log(set);
         for (const value of NotEatMenuValueArray) {
           if (set.has(value)) {
             menu[coachNameArray[count]] = menu[coachNameArray[count]].slice(0, -(menus[shuffleMenu].length + 1))
@@ -95,6 +97,7 @@ function getDish(SAMPLE, dayCategoryArray, menu, NotEatMenuObject, coachNameArra
 export function recommendRandomMenu(SAMPLE, NotEatMenuObject, coachNameArray) {
   const dayCategoryArray = [];
   const menu = {};
+  console.log(NotEatMenuObject)
   getDish(SAMPLE, dayCategoryArray, menu, NotEatMenuObject, coachNameArray);
   return [menu, dayCategoryArray];
 }
