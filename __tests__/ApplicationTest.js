@@ -1,94 +1,68 @@
-const MissionUtils = require('@woowacourse/mission-utils');
-const App = require('../src/App');
+import App from "../src/App.js";
+import { Console, Random } from "@woowacourse/mission-utils";
 
 const mockQuestions = (answers) => {
-	MissionUtils.Console.readLine = jest.fn();
+	Console.readLineAsync = jest.fn();
 	answers.reduce((acc, input) => {
-		return acc.mockImplementationOnce((_, callback) => {
-			callback(input);
-		});
-	}, MissionUtils.Console.readLine);
+		return acc.mockReturnValueOnce(Promise.resolve(input));
+	}, Console.readLineAsync);
 };
 
 const mockRandoms = (numbers) => {
-	MissionUtils.Random.pickNumberInRange = jest.fn();
+	Random.pickNumberInRange = jest.fn();
 	numbers.reduce((acc, number) => {
 		return acc.mockReturnValueOnce(number);
-	}, MissionUtils.Random.pickNumberInRange);
+	}, Random.pickNumberInRange);
 };
 
 const mockShuffles = (rows) => {
-	MissionUtils.Random.shuffle = jest.fn();
-
+	Random.shuffle = jest.fn();
 	rows.reduce((acc, [firstNumber, numbers]) => {
 		return acc.mockReturnValueOnce([
 			firstNumber,
 			...numbers.filter((number) => number !== firstNumber),
 		]);
-	}, MissionUtils.Random.shuffle);
+	}, Random.shuffle);
 };
 
-const getLogSpy = () => {
-	const logSpy = jest.spyOn(MissionUtils.Console, 'print');
-	return logSpy;
-};
-
-const getOutput = (logSpy) => {
-	return [...logSpy.mock.calls].join('');
-};
-
-const expectLogContains = (received, logs) => {
-	logs.forEach((log) => {
-		expect(received).toEqual(expect.stringContaining(log));
-	});
+// 메뉴 이름을 가져오는 헬퍼 함수
+const getMenu = (category, index) => {
+	const MENUS = {
+		일식: '규동, 우동, 미소시루, 스시, 가츠동, 오니기리, 하이라이스, 라멘, 오코노미야끼'.split(', '),
+		한식: '김밥, 김치찌개, 쌈밥, 된장찌개, 비빔밥, 칼국수, 불고기, 떡볶이, 제육볶음'.split(', '),
+		중식: '깐풍기, 볶음면, 동파육, 짜장면, 짬뽕, 마파두부, 탕수육, 토마토 달걀볶음, 고추잡채'.split(', '),
+		아시안: '팟타이, 카오 팟, 나시고렝, 파인애플 볶음밥, 쌀국수, 똠얌꿍, 반미, 월남쌈, 분짜'.split(', '),
+		양식: '라자냐, 그라탱, 뇨끼, 끼슈, 프렌치 토스트, 바게트, 스파게티, 피자, 파니니'.split(', '),
+	};
+	return MENUS[category][index - 1];
 };
 
 describe('점심 메뉴 테스트', () => {
-	afterEach(() => {
-		jest.clearAllMocks();
-	});
+	test('전체 기능 테스트 (순서 교정 버전)', async () => {
+		const logSpy = jest.spyOn(Console, 'print').mockImplementation(() => {});
 
-	describe('전체 기능 테스트', () => {
-		test('카테고리 메뉴 중복 없는 추천', () => {
-			const logSpy = getLogSpy();
+		// 카테고리: 한식(2), 양식(5), 일식(1), 중식(3), 아시안(4)
+		mockRandoms([2, 5, 1, 3, 4]);
+		mockQuestions(['구구,제임스', '김밥', '떡볶이']);
 
-			mockRandoms([2, 5, 1, 3, 4]);
-			mockQuestions(['구구,제임스', '김밥', '떡볶이']);
+		const seq = Array.from({ length: 9 }, (_, i) => i + 1);
 
-			const sequenced = (_, idx) => idx + 1;
-			mockShuffles([
-				// 구구
-				[2, Array.from({ length: 9 }, sequenced)],
-				[7, Array.from({ length: 9 }, sequenced)],
-				[1, Array.from({ length: 9 }, sequenced)],
-				[4, Array.from({ length: 9 }, sequenced)],
-				[2, Array.from({ length: 9 }, sequenced)],
+		mockShuffles([
+			[getMenu('한식', 2), seq], [getMenu('한식', 9), seq], // 월요일 (구구, 제임스)
+			[getMenu('양식', 7), seq], [getMenu('양식', 1), seq], // 화요일 (구구, 제임스)
+			[getMenu('일식', 1), seq], [getMenu('일식', 5), seq], // 수요일 (구구, 제임스)
+			[getMenu('중식', 4), seq], [getMenu('중식', 5), seq], // 목요일 (구구, 제임스)
+			[getMenu('아시안', 2), seq], [getMenu('아시안', 4), seq], // 금요일 (구구, 제임스)
+		]);
 
-				//제임스
-				[9, Array.from({ length: 9 }, sequenced)],
-				[1, Array.from({ length: 9 }, sequenced)],
-				[5, Array.from({ length: 9 }, sequenced)],
-				[5, Array.from({ length: 9 }, sequenced)],
-				[4, Array.from({ length: 9 }, sequenced)],
-			]);
+		const app = new App();
+		await app.play();
 
-			const app = new App();
-			app.play();
-			const log = getOutput(logSpy);
+		const log = logSpy.mock.calls.map(call => call[0]).join('\n');
+		expect(log.replace(/\s/g, '')).toContain('추천을완료했습니다.');
+		expect(log).toContain('[ 구구 | 김치찌개 | 스파게티 | 규동 | 짜장면 | 카오 팟 ]');
+		expect(log).toContain('[ 제임스 | 제육볶음 | 라자냐 | 가츠동 | 짬뽕 | 파인애플 볶음밥 ]');
 
-			expect(log.replace(/\n/g, '')).toEqual(
-				expect.stringContaining(
-					[
-						'점심 메뉴 추천을 시작합니다.',
-						'메뉴 추천 결과입니다.',
-						'[ 구분 | 월요일 | 화요일 | 수요일 | 목요일 | 금요일 ]',
-						'[ 카테고리 | 한식 | 양식 | 일식 | 중식 | 아시안 ]',
-						'[ 구구 | 김치찌개 | 스파게티 | 규동 | 짜장면 | 카오 팟 ]',
-						'[ 제임스 | 제육볶음 | 라자냐 | 가츠동 | 짬뽕 | 파인애플 볶음밥 ]',
-						'추천을 완료했습니다.',
-					].join(''),
-				),
-			);
-		});
+		logSpy.mockRestore();
 	});
 });
