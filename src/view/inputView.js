@@ -11,10 +11,16 @@ export async function inputNotEatMenu(coachNameArray) {
   for (const name of coachNameArray) {
     while (true) {
       try {
-        NotEatMenuObject[name] = await Console.readLineAsync(`${name}(이)가 못 먹는 메뉴를 입력해 주세요.\n`);
-        if (Object.values(NotEatMenuObject[name]).length < 0 || Object.values(NotEatMenuObject[name]).length > 2) {
+        const input = await Console.readLineAsync(`${name}(이)가 못 먹는 메뉴를 입력해 주세요.\n`);
+        if (input === '') {
+          NotEatMenuObject[name] = '';
+          break;
+        }
+        const menu = input.split(',').map(value => value.trim()).filter(value => value.length > 0);
+        if (menu.length < 0 || menu.length > 2) {
           throw new Error('[ERROR]못 먹는 메뉴는 0~2개 사이입니다.');
         }
+        NotEatMenuObject[name] = menu.join(',');
         break;
       } catch (e) {
         await printError(e.message);
