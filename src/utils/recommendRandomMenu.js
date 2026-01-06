@@ -31,8 +31,6 @@ function getRandomMenu(menu, dayCategoryArray, SAMPLE, NotEatMenuObject, coachNa
       const NotEatMenuKeyArray = Object.keys(NotEatMenuObject);
       if (NotEatMenuKeyArray.includes(coachNameArray[count])) {
         const NotEatMenuValueArray = NotEatMenuObject[coachNameArray[count]].split(',').map(value => value.trim());
-        console.log(NotEatMenuValueArray);
-        console.log(set);
         for (const value of NotEatMenuValueArray) {
           if (set.has(value)) {
             menu[coachNameArray[count]] = menu[coachNameArray[count]].slice(0, -(menus[shuffleMenu].length + 1))
