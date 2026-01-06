@@ -1,5 +1,5 @@
-const MissionUtils = require('@woowacourse/mission-utils');
-const App = require('../src/App');
+import MissionUtils from "@woowacourse/mission-utils";
+import App from "../src/App.js";
 
 const mockQuestions = (answers) => {
 	MissionUtils.Console.readLine = jest.fn();
