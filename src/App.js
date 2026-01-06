@@ -1,6 +1,7 @@
-const {printStart} = require("./view/outputView");
-const {inputCoachName, inputNotEatMenu} = require("./view/inputView");
-const {getCoachArray} = require("./utils/getCoachArray");
+import { printStart, printResult } from "./view/outputView.js";
+import { inputCoachName, inputNotEatMenu } from "./view/inputView.js";
+import { getCoachArray } from "./utils/getCoachArray.js";
+import { recommendRandomMenu } from "./utils/recommendRandomMenu.js";
 const SAMPLE = {
 	일식: '규동, 우동, 미소시루, 스시, 가츠동, 오니기리, 하이라이스, 라멘, 오코노미야끼',
 	한식: '김밥, 김치찌개, 쌈밥, 된장찌개, 비빔밥, 칼국수, 불고기, 떡볶이, 제육볶음',
@@ -15,7 +16,9 @@ class App {
 		const coachName = await inputCoachName();
 		const coachNameArray = getCoachArray(coachName);
 		const NotEatMenuObject = await inputNotEatMenu(coachNameArray);
+		const [menu, dayCategoryArray] = recommendRandomMenu(SAMPLE, NotEatMenuObject, coachNameArray);
+		await printResult(menu, dayCategoryArray);
 	}
 }
 
-module.exports = App;
+export default App;
