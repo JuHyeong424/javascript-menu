@@ -1,4 +1,4 @@
-import MissionUtils from "@woowacourse/mission-utils";
+import {Random} from "@woowacourse/mission-utils";
 
 /*
 coachNameArray [ 'a', 'b', 'c' ]
@@ -12,7 +12,7 @@ function getRandomMenu(menu, dayCategoryArray, SAMPLE, NotEatMenuObject, coachNa
   while (count < coachNameArray.length) {
     const menus = SAMPLE.split(',');
     const menusIndex = Array.from({ length: menus.length }, (v, i) => i);
-    const shuffleMenu = MissionUtils.Random.shuffle(menusIndex)[0];
+    const shuffleMenu = Random.shuffle(menusIndex)[0];
     if (!menu[coachNameArray[count]]) {
       menu[coachNameArray[count]] = '';
     }
@@ -50,7 +50,7 @@ function getDish(SAMPLE, dayCategoryArray, menu, NotEatMenuObject, coachNameArra
   let count = 0;
 
   while (count < 5) {
-    const category = MissionUtils.Random.pickNumberInRange(1, 5);
+    const category = Random.pickNumberInRange(1, 5);
 
     switch (category) {
       case 1:
